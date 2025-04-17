@@ -94,6 +94,7 @@ class CalculatorTest {
     @DisplayName("should display result after subtracting two positive multi-digit numbers")
     void testSubtract() {
         Calculator calc = new Calculator();
+
         calc.pressDigitKey(2);
         calc.pressDigitKey(0);
         calc.pressBinaryOperationKey("-");
@@ -102,6 +103,55 @@ class CalculatorTest {
         calc.pressEqualsKey();
 
         String expected = "10";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("should only reset screen on first clear and all on second clear")
+    void testClearKeyBehavior() {
+        Calculator calc = new Calculator();
+
+        // Step 1: press clear once, it should only reset the screen
+        calc.pressDigitKey(5);
+        calc.pressBinaryOperationKey("+");
+        calc.pressClearKey();
+        calc.pressDigitKey(3);
+        calc.pressEqualsKey();
+
+        String expected = "8";
+        String actual = calc.readScreen();
+
+        assertEquals(expected, actual);
+
+        // Step 2: press clear TWICE so That everything should reset
+        calc.pressClearKey();
+        calc.pressClearKey();
+        calc.pressDigitKey(2);
+
+        String afterFullReset = "2";
+        String afterFullResetActual = calc.readScreen();
+
+        assertEquals(afterFullReset, afterFullResetActual);
+    }
+
+
+    @Test
+    @DisplayName("should correctly add two decimal numbers")
+    void testDecimalAdditionPrecision() {
+        Calculator calc = new Calculator();
+
+        calc.pressDigitKey(1);
+        calc.pressDotKey();
+        calc.pressDigitKey(1); // 1.1
+        calc.pressBinaryOperationKey("+");
+        calc.pressDigitKey(2);
+        calc.pressDotKey();
+        calc.pressDigitKey(2); // 2.2
+        calc.pressEqualsKey();
+
+        String expected = "3.3";
         String actual = calc.readScreen();
 
         assertEquals(expected, actual);
