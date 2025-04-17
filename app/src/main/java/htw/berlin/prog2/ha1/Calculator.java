@@ -44,10 +44,21 @@ public class Calculator {
      * Werte sowie der aktuelle Operationsmodus zurückgesetzt, so dass der Rechner wieder
      * im Ursprungszustand ist.
      */
+    private boolean justCleared = false;
+
     public void pressClearKey() {
-        screen = "0";
-        latestOperation = "";
-        latestValue = 0.0;
+        if (!justCleared) {
+            // First press: reset only the screen
+            screen = "0";
+            justCleared = true;
+        } else {
+            // Second consecutive press: reset everything
+            screen = "0";
+            latestOperation = "";
+            latestValue = 0.0;
+            justCleared = false;
+        }
+
     }
 
     /**
@@ -118,16 +129,33 @@ public class Calculator {
      * und das Ergebnis direkt angezeigt.
      */
     public void pressEqualsKey() {
+        if (latestOperation == null || latestOperation.isEmpty()) return;
+
         var result = switch(latestOperation) {
             case "+" -> latestValue + Double.parseDouble(screen);
             case "-" -> latestValue - Double.parseDouble(screen);
             case "x" -> latestValue * Double.parseDouble(screen);
-            case "/" -> latestValue / Double.parseDouble(screen);
+            case "/" -> {
+                if (Double.parseDouble(screen) == 0) yield Double.NaN;
+                else yield latestValue / Double.parseDouble(screen);
+            }
             default -> throw new IllegalArgumentException();
         };
-        screen = Double.toString(result);
-        if(screen.equals("Infinity")) screen = "Error";
-        if(screen.endsWith(".0")) screen = screen.substring(0,screen.length()-2);
-        if(screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            screen = "Error";
+        } else {
+            result = Math.round(result * 1_000_000_000d) / 1_000_000_000d;
+            screen = Double.toString(result);
+        }
+
+        // handle error and rounding
+        if (Double.isNaN(result) || Double.isInfinite(result)) {
+            screen = "Error";
+        } else {
+            result = Math.round(result * 10d) / 10d;  // rounding
+            screen = Double.toString(result);
+            if (screen.endsWith(".0")) screen = screen.substring(0, screen.length() - 2);
+            if (screen.contains(".") && screen.length() > 11) screen = screen.substring(0, 10);
+        }
     }
 }
