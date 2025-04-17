@@ -141,12 +141,6 @@ public class Calculator {
             }
             default -> throw new IllegalArgumentException();
         };
-        if (Double.isNaN(result) || Double.isInfinite(result)) {
-            screen = "Error";
-        } else {
-            result = Math.round(result * 1_000_000_000d) / 1_000_000_000d;
-            screen = Double.toString(result);
-        }
 
         // handle error and rounding
         if (Double.isNaN(result) || Double.isInfinite(result)) {
